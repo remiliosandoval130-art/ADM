@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <div class="banner red">
+    <p class="kicker">Introduzca sus datos</p>
+    <h1>Evaluación inicial</h1>
+  </div>
+
+  <form method="post" class="grid2 form" id="sym-form">
+    <div>
+      <label>Nombres
+        <input type="text" name="nombre" placeholder="Nombre y apellido" required>
+      </label>
+    </div>
+    <div>
+      <label>Edad
+        <input type="number" name="edad" min="0" max="120" placeholder="Ej. 35" required>
+      </label>
+    </div>
+    <div>
+      <label>Número Identidad
+        <input type="text" name="identidad" placeholder="Documento / cédula" required>
+      </label>
+    </div>
+    <div class="full">
+      <label>Antecedentes médicos
+        <textarea name="antecedentes" rows="3" placeholder="Alergias, hipertensión, etc."></textarea>
+      </label>
+    </div>
+
+    <div class="full">
+      <p class="kicker">Síntomas (<span id="sym-count">0</span> seleccionados)</p>
+      <div class="sym-grid">
+        {% for key, label in labels.items() %}
+        <label class="chip">
+          <input type="checkbox" name="{{ key }}" data-sym="{{ key }}"> {{ label }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="full right">
+      <button type="submit" class="btn primary">Procesar Diagnóstico</button>
+    </div>
+  </form>
+
+  <script>
+    // Interactividad: contar síntomas en tiempo real
+    const form = document.getElementById('sym-form');
+    const countEl = document.getElementById('sym-count');
+    form.addEventListener('change', () => {
+      let data = {};
+      form.querySelectorAll('input[type="checkbox"][data-sym]').forEach(cb => {
+        data[cb.dataset.sym] = cb.checked;
+      });
+      fetch('{{ url_for("symcount") }}', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      }).then(r => r.json()).then(j => {
+        countEl.textContent = j.count;
+      }).catch(() => {});
+    });
+  </script>
+
+  <div class="left actions-gap" style="padding: 0 16px 12px 16px;">
+    <button class="btn ghost" onclick="history.back()">Retroceder</button>
+  </div>
+</section>
+{% endblock %}

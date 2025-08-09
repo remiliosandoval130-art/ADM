@@ -1,0 +1,93 @@
+/* Variables y base */
+*{box-sizing:border-box}
+:root{
+  --red:#ff3b3b; --red-600:#e03232; --bg:#f6f7fb; --ink:#0b1020; --muted:#5b6175;
+  --card:#ffffff; --ring:rgba(255,59,59,.25); --ok:#0ea5e9; --mid:#f59e0b; --high:#ef4444;
+}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+
+/* Layout */
+.topbar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e9ecf1;
+  display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.brand{font-weight:800;letter-spacing:.5px}
+.actions .btn{margin-left:8px}
+.main{padding:24px;display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 120px)}
+.footer{text-align:center;padding:12px;color:var(--muted)}
+
+.card{background:var(--card);border:1px solid #e9ecf1;border-radius:14px;
+  box-shadow:0 6px 24px rgba(17,24,39,.08);width:min(1024px,96vw);padding:0 0 16px 0}
+.card.narrow{width:min(480px,96vw)}
+.banner{padding:16px;border-radius:14px 14px 0 0}
+.banner.red{background:var(--red);color:#fff}
+.kicker{text-transform:uppercase;letter-spacing:.08em;font-size:.8rem;opacity:.9;margin:0 0 4px 0}
+h1{margin:0;font-size:1.3rem}
+
+.form{padding:16px}
+.form label{display:block;font-size:.9rem;margin:8px 0;color:#1c2238}
+.form input,.form textarea{
+  width:100%;margin-top:6px;padding:10px 12px;border-radius:10px;border:1px solid #d6dae3;background:#fff;outline:none
+}
+.form input:focus,.form textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--ring)}
+.check{display:inline-flex;align-items:center;gap:8px;margin-right:16px}
+.btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid transparent;text-decoration:none;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--red);color:#fff}
+.btn.primary:hover{background:var(--red-600)}
+.btn.ghost{background:#fff;color:var(--ink);border-color:#e3e6ee}
+.btn.ghost:hover{border-color:#cfd5e3}
+.btn.danger{background:#1c2238;color:#fff}
+.btn.danger:hover{background:#0f1428}
+.alert{margin:12px 16px;padding:10px;border-radius:10px;background:#fff2f2;border:1px solid #ffd2d2;color:#9a1c1c}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px}
+.grid2 .full{grid-column:1 / -1}
+.right{text-align:right}.center{text-align:center}.muted{color:var(--muted)}
+.actions-gap .btn{margin-left:8px}
+
+.sym-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px}
+.chip{display:flex;align-items:center;gap:8px;border:1px solid #e9ecf1;padding:8px 10px;border-radius:999px;background:#fff}
+
+.stat{background:#fff;border:1px solid #e9ecf1;border-radius:10px;padding:12px;margin-bottom:10px}
+.stat-row,.alt-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.strong{font-weight:800}
+.bar{position:relative;height:10px;background:#f0f2f7;border-radius:999px;overflow:hidden}
+.bar span{position:absolute;left:0;top:0;bottom:0;background:var(--red)}
+.bar.sm{height:8px}
+
+.badge{display:inline-block;margin-top:8px;padding:6px 10px;border-radius:999px;font-weight:700}
+.badge.triage.alta{background:var(--high);color:#fff}
+.badge.triage.media{background:var(--mid);color:#fff}
+.badge.triage.baja{background:var(--ok);color:#fff}
+
+.expander{margin-top:10px}
+.expander summary{cursor:pointer}
+
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+
+.left{text-align:left}
+.footer .credits{margin-top:6px;color:#5b6175}
+
+
+/* --- Fondo con degradado + corazones --- */
+body{
+  background-image:
+    linear-gradient(to bottom right, rgba(255,255,255,0.85), rgba(255,59,59,0.08)),
+    url('/static/img/bg_med.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+}
+
+/* Navbar de enlaces */
+.nav-links a{
+  margin: 0 8px;
+  color: #1c2238;
+  text-decoration: none;
+  font-weight: 600;
+}
+.nav-links a:hover{ text-decoration: underline; }
+.nav-links .sep{ color:#c5cad6; margin: 0 6px; }

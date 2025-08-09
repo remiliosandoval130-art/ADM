@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card narrow">
+  <div class="banner red">
+    <p class="kicker">Vamos</p>
+    <h1>CREA TU CUENTA</h1>
+  </div>
+
+  {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+  <form method="post" class="form">
+    <label>Nombres
+      <input type="text" name="name" placeholder="Tu nombre" required>
+    </label>
+    <label>Dirección de Correo
+      <input type="email" name="email" placeholder="correo@ejemplo.com" required>
+    </label>
+    <label>Contraseña
+      <input type="password" name="password" placeholder="********" required>
+    </label>
+    <label>Repite tu contraseña
+      <input type="password" name="password2" placeholder="********" required>
+    </label>
+    <label class="check">
+      <input type="checkbox" required> Estoy de acuerdo con los términos y privacidad
+    </label>
+    <button type="submit" class="btn primary">Inscribirse</button>
+  </form>
+  <div class="muted center">
+    <a href="{{ url_for('login') }}">¿Tienes una cuenta? Inicia sesión</a>
+  </div>
+
+  <div class="left actions-gap" style="padding: 0 16px 12px 16px;">
+    <button class="btn ghost" onclick="history.back()">Retroceder</button>
+  </div>
+</section>
+{% endblock %}

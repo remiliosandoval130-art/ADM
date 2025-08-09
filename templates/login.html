@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card narrow">
+  <div class="banner red">
+    <p class="kicker">Asistente de Diagnósticos Médicos</p>
+    <h1>ADM - Aplicativo Médico</h1>
+  </div>
+
+  {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+  <form method="post" class="form">
+    <label>Email
+      <input type="email" name="email" placeholder="correo@ejemplo.com" required>
+    </label>
+    <label>Password
+      <input type="password" name="password" placeholder="********" required>
+    </label>
+    <button type="submit" class="btn primary">Acceder</button>
+  </form>
+  <div class="muted center">
+    <a href="{{ url_for('register') }}">Crear cuenta</a>
+  </div>
+</section>
+{% endblock %}

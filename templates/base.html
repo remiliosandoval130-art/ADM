@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ADM - Aplicativo Médico</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ADM</div>
+    <div class="nav-links"><a href="{{ url_for('login') }}">Login</a><span class="sep">·</span><a href="{{ url_for('register') }}">Crear cuenta</a><span class="sep">·</span>{% if session.get('user_id') %}<a href="{{ url_for('form') }}">Formulario</a>{% else %}<span style="color:#9aa2b1">Formulario</span>{% endif %}</div>
+    <nav class="actions">
+      {% if session.get('user_id') %}
+      <a class="btn ghost" href="{{ url_for('logout') }}">Salir</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <small>Asistente de Diagnósticos Médicos · Prototipo educativo</small>
+  
+    <div class="credits">By: Ing. Emilio Regalado & Angel Tocto</div>
+  </footer>
+</body>
+</html>
