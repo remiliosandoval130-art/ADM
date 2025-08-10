@@ -2,3 +2,4 @@ flask
 flask_sqlalchemy
 scikit-learn
 gunicorn
+psycopg2-binary
