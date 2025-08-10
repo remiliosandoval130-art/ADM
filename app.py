@@ -1,17 +1,17 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
-import os  # <<--- Importar aquí, no en la línea de la URI
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta_super_segura"
 
-# Usar Postgres desde la variable de entorno
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
 
 
 # ------------------ MODELO DE USUARIO ------------------
