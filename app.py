@@ -2,11 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
+import os  # <<--- Importar aquí, no en la línea de la URI
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta_super_segura"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+
+# Usar Postgres desde la variable de entorno
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
+
 
 # ------------------ MODELO DE USUARIO ------------------
 class User(db.Model):
@@ -170,3 +176,6 @@ def symcount():
 
 if __name__ == "__main__":
     app.run(debug=False)
+# --- al final de tus modelos ---
+with app.app_context():
+    db.create_all()  # crea las tablas si no existen
