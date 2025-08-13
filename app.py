@@ -1,4 +1,6 @@
 import os
+import json
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import numpy as np
@@ -12,13 +14,33 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-
-
 # ------------------ MODELO DE USUARIO ------------------
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
+
+# ------------------ NUEVO: MODELO DE EVALUACIÓN (HISTORIAL) ------------------
+class Evaluation(db.Model):
+    __tablename__ = "evaluations"
+
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    # datos del paciente (tal como llegan del form)
+    patient_name  = db.Column(db.Text, nullable=True)
+    age           = db.Column(db.Integer, nullable=True)
+    identity_num  = db.Column(db.Text, nullable=True)
+    antecedents   = db.Column(db.Text, nullable=True)
+
+    # resultado y material clínico
+    symptoms      = db.Column(db.JSON,  nullable=False)   # lista/objeto JSON con síntomas marcados
+    diagnosis     = db.Column(db.Text,  nullable=False)   # diagnóstico principal
+    probability   = db.Column(db.Integer, nullable=False) # % del principal
+    alternatives  = db.Column(db.JSON,  nullable=True)    # hipótesis alternativas
+    recommendations = db.Column(db.Text, nullable=False)  # recomendaciones mostradas
+
+    created_at    = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 with app.app_context():
     db.create_all()
@@ -63,8 +85,7 @@ CLASSES = np.array([
     "Hipoxemia (revisar)"
 ])
 
-# Creamos un dataset binario sintético (solo para demo)
-# Cada fila = vector de 16 síntomas (0/1). Esto NO es diagnóstico real.
+# Dataset sintético binario (solo demo)
 rng = np.random.default_rng(42)
 X_train = rng.integers(0, 2, size=(64, len(SYMPTOMS)))
 y_train = rng.integers(0, len(CLASSES), size=(64,))
@@ -72,7 +93,6 @@ clf = BernoulliNB()
 clf.fit(X_train, y_train)
 
 def infer_top(scores):
-    # Devuelve lista de (clase, prob%) ordenada desc
     order = np.argsort(scores)[::-1]
     prob = (scores[order] / scores[order].sum()) if scores.sum() > 0 else np.ones_like(scores[order])/len(scores)
     prob = (prob * 100).round().astype(int)
@@ -80,14 +100,11 @@ def infer_top(scores):
     return out[:3]
 
 def triage_level(sym_vector):
-    # Semáforo de prioridad simple basado en red flags
     red_flags = 0
     idx = {k:i for i,k in enumerate(SYMPTOMS)}
-    # Señales críticas reportadas
     if sym_vector[idx["saturacion_baja"]] == 1: red_flags += 2
     if sym_vector[idx["presion_alta"]] == 1: red_flags += 1
     if sym_vector[idx["glucosa_alta"]] == 1: red_flags += 1
-    # Fiebre + dolor_cabeza + fatiga = sumar 1
     if sum(sym_vector[[idx["fiebre"], idx["dolor_cabeza"], idx["fatiga"]]]) >= 2:
         red_flags += 1
     if red_flags >= 3: return ("ALTA", "Atención prioritaria en las próximas horas.")
@@ -146,13 +163,46 @@ def form():
             if request.form.get(key):
                 x[i] = 1
 
-        scores = clf.predict_log_proba([x])[0]  # log-probs
-        scores = np.exp(scores)                 # pasar a "probabilidad" (no calibrada)
-        ranking = infer_top(scores)
-
+        scores = clf.predict_log_proba([x])[0]
+        scores = np.exp(scores)
+        ranking = infer_top(scores)          # [(diag, %), (alt1, %), (alt2, %)]
         nivel, msg = triage_level(x)
         seleccionados = [SYMPTOMS_LABELS[k] for i,k in enumerate(SYMPTOMS) if x[i]==1]
 
+        # ------------------ NUEVO: guardar en la BD ------------------
+        try:
+            user_id = session.get("user_id")  # puede ser None
+            principal_diag, principal_prob = ranking[0] if ranking else ("N/A", 0)
+            alternativas = ranking[1:] if len(ranking) > 1 else []
+
+            # mismo texto de recomendaciones que muestras en la vista
+            recomendaciones_texto = (
+                "Hidratación y control de temperatura si hay fiebre. "
+                "Consulta si aparecen señales de alarma (dolor torácico, "
+                "dificultad respiratoria, desorientación). "
+                "Monitoreo en 24–48 h y seguimiento con personal de salud."
+            )
+
+            ev = Evaluation(
+                user_id       = user_id,
+                patient_name  = nombre,
+                age           = int(edad) if str(edad).isdigit() else None,
+                identity_num  = identidad,
+                antecedents   = antecedentes,
+                symptoms      = seleccionados,               # lista JSON
+                diagnosis     = principal_diag,
+                probability   = int(principal_prob),
+                alternatives  = alternativas,                # lista de (diag, %)
+                recommendations = recomendaciones_texto
+            )
+            db.session.add(ev)
+            db.session.commit()
+        except Exception as e:
+            # si hubiera un problema de conexión/commit, no romper la UI
+            db.session.rollback()
+            # opcional: print(e)
+
+        # ------------------ render como siempre ---------------------
         return render_template(
             "result.html",
             nombre=nombre, edad=edad, identidad=identidad,
@@ -176,6 +226,7 @@ def symcount():
 
 if __name__ == "__main__":
     app.run(debug=False)
+
 # --- al final de tus modelos ---
 with app.app_context():
     db.create_all()  # crea las tablas si no existen
